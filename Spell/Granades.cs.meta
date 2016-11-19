@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 30928d99306c0ce4d980e257e0a940cc
+timeCreated: 1477839980
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - BarsSpell: {fileID: 4000010372613500, guid: 978807d09f6594344b035b33df6a2c9b,
+      type: 2}
+  - Model: {fileID: 4000010283600696, guid: 31e07baef2de2cd4098d0d6c3d79f5f7, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
