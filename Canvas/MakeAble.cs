@@ -12,5 +12,9 @@ public class MakeAble : MonoBehaviour, IPointerClickHandler{
         {
             this.transform.parent.GetComponent<MakerSpace>().Make_all();
         }
+        else if (this.transform.name == "MakerTable")
+        {
+            this.transform.parent.GetComponent<MakerSpace>().Make_all();
+        }
     }
 }

@@ -6,6 +6,6 @@ public class MeatSmall : MonoBehaviour {
     public void Work(Transform Trig_Unit,float value)
     {
         Trig_Unit.GetComponent<Self_class>().ChanHunger(value);
-        Instantiate(effect, Trig_Unit.position, Trig_Unit.rotation, Trig_Unit);
+        GameObject.Find("Hero").transform.FindChild("Player").GetComponent<UnitSyncCmd>().CmdEffectBindUnit(6, Trig_Unit.gameObject);
     }
 }

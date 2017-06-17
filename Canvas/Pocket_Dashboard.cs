@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using GetSName;
 using UnityEngine.UI;
 public class Pocket_Dashboard : MonoBehaviour
 {
+    private int Id;
     private string dash_Item;
-    public  int dash_addr;
     private int dash_talentId;
     private string dash_content;
     public  Transform canvas_player;
     private Transform dashUse,dashDrop,dashShortcut,dashStudy;
 	void Awake() {
-        dash_addr = 1;
+        Id = 1;
         dashUse = this.transform.FindChild("Dash_use");
         dashDrop = this.transform.FindChild("Dash_drop");
         dashShortcut= this.transform.FindChild("Dash_shortcut");
@@ -25,10 +26,11 @@ public class Pocket_Dashboard : MonoBehaviour
         }
         return str;
     }
-    public void work(int addr,Transform Item)
+    public void work(int ItemId)
     {
         dashStudy.gameObject.SetActive(false);
-        if(Item.GetComponent<Self_class>().s_iType== "Material")
+        Id = ItemId;
+        if(Item.Type(ItemId)== "Material")
         {
             dashUse.gameObject.SetActive(false);
             dashShortcut.gameObject.SetActive(false);
@@ -41,10 +43,9 @@ public class Pocket_Dashboard : MonoBehaviour
         }
         this.transform.parent.FindChild("MakerSpace").gameObject.SetActive(false);
         dash_talentId = 0;
-        dash_addr = addr+1;
-        dash_Item = Item.GetComponent<Self_class>().s_name;
-        dash_content = Item.GetComponent<Self_class>().s_Icontent;
-        string Issuetext= "物品栏" + dash_addr.ToString() + " :" + dash_Item; 
+        dash_Item = Item.Name(ItemId);
+        dash_content = Item.Content(ItemId);
+        string Issuetext= "物品栏"  + " :" + dash_Item; 
         this.transform.FindChild("Issue").GetComponent<Text>().text = Issuetext;
         this.transform.FindChild("Content").GetComponent<Text>().text =dash_content;
     }
@@ -54,7 +55,6 @@ public class Pocket_Dashboard : MonoBehaviour
         dashUse.gameObject.SetActive(false);
         dashShortcut.gameObject.SetActive(false);
         dashDrop.gameObject.SetActive(false);
-        this.transform.parent.FindChild("MakerSpace").gameObject.SetActive(false);
         Transform GetSName = canvas_player.parent.FindChild("get_sName");
         dash_Item = GetSName.GetComponent<get_sName>().Item_name(Iid);
         dash_content = GetSName.GetComponent<get_sName>().Item_content(Iid);
@@ -107,43 +107,36 @@ public class Pocket_Dashboard : MonoBehaviour
     }
     public void drop()
     {
-        canvas_player.GetComponent<player_pocket>().drop(dash_addr-1);
-        string res = "Start";
-        while (res!= "Empty"){
-            res = canvas_player.GetComponent<play_joystick>().query_i((dash_addr - 1));
-            if (res == "Empty")
-            {
-                break;
-            }
-            else
-            {
-                this.transform.parent.FindChild("Pan_shortcut").GetComponent<Panshort>().Drop_es(res);
-                canvas_player.GetComponent<play_joystick>().remove(res);
-            }
-        }
+        canvas_player.GetComponent<player_pocket>().drop(Id);
+        //string res = "Start";
+        //while (res!= "Empty"){
+        //    res = canvas_player.GetComponent<play_joystick>().query_i((dash_addr - 1));
+        //    if (res == "Empty")
+        //    {
+        //        break;
+        //    }
+        //    else
+        //    {
+        //        this.transform.parent.FindChild("Pan_shortcut").GetComponent<Panshort>().Drop_es(res);
+        //        canvas_player.GetComponent<play_joystick>().remove(res);
+        //    }
+        //}
         this.close();
     }
     public void close()
     {
-        this.transform.parent.FindChild("MakerSpace").gameObject.SetActive(true);
         this.gameObject.SetActive(false);
     }
     public void shortcut()
     {
         this.gameObject.SetActive(false);
         this.transform.parent.FindChild("Pan_shortcut").gameObject.SetActive(true);
-        if (dash_talentId == 0)
-        {
-            this.transform.parent.FindChild("Pan_shortcut").GetComponent<Panshort>().Item_addr = dash_addr;
-        }
-        else
-        {
-            this.transform.parent.FindChild("Pan_shortcut").GetComponent<Panshort>().Talent_id = dash_talentId;
-        }
+        this.transform.parent.FindChild("Pan_shortcut/SP").GetComponent<Pan_shortcut>().Id = Id;
+        this.transform.parent.FindChild("Pan_shortcut/SP").GetComponent<Pan_shortcut>().Clean();
     }
     public void use()
     {
-        canvas_player.GetComponent<player_pocket>().use(dash_addr - 1);
+        canvas_player.GetComponent<player_pocket>().use(Id);
         //canvas_player.parent.FindChild("Spell").GetComponent<Spell_cast>().casting(this.transform.FindChild("get_sName").GetComponent<get_sName>().Item_Spell(Item_id), canvas_player);
     }
     public void study()

@@ -1,12 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using _spellLib;
 public class Panshort : MonoBehaviour {
     public int Item_addr;
     public int Talent_id;
-    public void Drop_es(string res)
-    {
-        this.transform.FindChild("P_" + res + "_s").GetComponent<Pan_short_signal>().isSet = false;
-        this.transform.FindChild("P_" + res + "_s").GetComponent<Pan_short_signal>().change();
-    }
+    public Transform cplayer;
 }

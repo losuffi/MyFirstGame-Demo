@@ -1,51 +1,57 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections;
+using _spellLib;
+using GetSName;
 using UnityEngine.UI;
 
-public class Pocket : MonoBehaviour,IPointerClickHandler {
-
-    // Use this for initialization
+public class Pocket : MonoBehaviour{
     public Sprite Empty_image;
-    //private int[] U_Item_id=new int[20];
-    //private int[] U_Item_count=new int[20];
-    private Transform cplayer;
-    private bool isUpdate;
-    private bool isOpen;
-    private Transform Bag;
+    private Transform cplayer,Bag;
+    private bool isUpdate,isOpen;
+    public void Init()
+    {
+        cplayer = this.transform.parent.GetComponent<Canvas_Init>().cplayer;
+        this.transform.parent.FindChild("Pan_shortcut").GetComponent<Panshort>().cplayer = cplayer;
+        this.transform.parent.FindChild("Pocket_dashboard").GetComponent<Pocket_Dashboard>().canvas_player = cplayer;
+        this.transform.parent.FindChild("Pan_shortcut").gameObject.SetActive(false);
+        this.transform.parent.Find("Pocket_dashboard").gameObject.SetActive(false);
+    }
     void Awake()
     {
-        Bag = this.transform.parent.Find("Pocket").FindChild("PocketBag");
+        Bag = this.transform.parent.Find("PocketBag");
     }
 	void Start() {
-        cplayer = GameObject.Find("Hero").transform.FindChild("player");
         for (int i = 1; i < 10; i++)
         {
             Bag.FindChild("tP_" + i.ToString()).gameObject.SetActive(false);
         }
-        this.transform.parent.Find("Pocket").gameObject.SetActive(false);
-        this.transform.parent.Find("Pocket").FindChild("Pan_shortcut").gameObject.SetActive(false);
         isOpen = false;
         isUpdate = false;
 	}
-    private void Update_canvas(Transform[] U_Item)
+    void Clean()
     {
-        if (isUpdate)                               
+        for (int i = 1; i < 10; i++)
         {
-            for (int j = 0; j < U_Item.Length; j++)
+            Bag.FindChild("tP_" + i).gameObject.SetActive(false);
+            Bag.FindChild("P_" + i).GetComponent<Image>().sprite = Item.Geizi;
+            Bag.FindChild("P_" + i).GetComponent<Pocket_current>().Set(0);
+        }
+    }
+    public void Update_canvas()
+    {
+        if (isUpdate)
+        {
+            Clean();
+            int j = 0;
+            ICollection de = cplayer.GetComponent<player_pocket>().mybag.SpaceKeys();
+            foreach (int c in de)
             {
-                if (U_Item[j]==null)
-                {
-                    Bag.FindChild("P_" + (j + 1).ToString()).GetComponent<Image>().sprite = Empty_image;
-                    Bag.FindChild("tP_" + (j + 1).ToString()).GetComponent<Text>().text = " ";
-                    Bag.FindChild("tP_" + (j + 1).ToString()).gameObject.SetActive(false);
-                }
-                else if (U_Item[j].GetComponent<Self_class>().s_iCount > 0)
-                {
-                    Bag.FindChild("tP_" + (j+1).ToString()).gameObject.SetActive(true);
-                    Bag.FindChild("tP_" + (j+1).ToString()).GetComponent<Text>().text = U_Item[j].GetComponent<Self_class>().s_iCount.ToString();
-                    Bag.FindChild("P_" + (j + 1).ToString()).GetComponent<Image>().sprite = this.transform.parent.FindChild("Sprite").GetComponent<ImageSprite>().GetSprite(U_Item[j].GetComponent<Self_class>().s_id);
-                }
+                j++;
+                Bag.FindChild("tP_" + j).gameObject.SetActive(true);
+                Bag.FindChild("tP_" + j).GetComponent<Text>().text = cplayer.GetComponent<player_pocket>().Query(c).ToString();
+                Bag.FindChild("P_" + j).GetComponent<Image>().sprite = Item.ISprite(c);
+                Bag.FindChild("P_" + j).GetComponent<Pocket_current>().Set(c);
             }
             try
             {
@@ -59,41 +65,27 @@ public class Pocket : MonoBehaviour,IPointerClickHandler {
             isUpdate = false;
         }
     }
-    public void Update_canvas_con(Transform[] Item)
+    public void Update_canvas_con()
     {
         isUpdate = true;
         if (isOpen)
         {
-            //this.transform.parent.Find("Pocket").gameObject.SetActive(true);
-            this.Update_canvas(Item);
+            Update_canvas();
         }
 
     }
-    public bool Empty_check(int addr)
+    public void OpenBag()
     {
-        return cplayer.GetComponent<player_pocket>().tItem_temp[addr] !=null ? false : true;
-    }
-    public Transform Item_get(int addr)
-    {
-        return cplayer.GetComponent<player_pocket>().tItem_temp[addr];
-    }
-    public void OnPointerClick(PointerEventData eventData)
-    {   
-        
-        isOpen = (isOpen == false ? true : false);
+        isOpen = isOpen ? false : true;
+        Bag.gameObject.SetActive(isOpen);
         if (isOpen)
-        {                                                                   //更新背包，背包关闭时获得物品
-            this.transform.parent.Find("Pocket").gameObject.SetActive(true);
-            this.transform.parent.FindChild("Pocket").FindChild("MakerSpace").GetComponent<MakerSpace>().ReStart();
-            this.transform.parent.FindChild("Pocket").FindChild("MakerSpace").gameObject.SetActive(true);
-            this.transform.parent.FindChild("Pocket").FindChild("Pocket_dashboard").gameObject.SetActive(false);
-            this.Update_canvas(cplayer.GetComponent<player_pocket>().tItem_temp);
+        {
+            Update_canvas();
         }
         else
         {
-            this.transform.parent.FindChild("Pocket").FindChild("MakerSpace").GetComponent<MakerSpace>().ReStart();
-            this.transform.parent.Find("Pocket").gameObject.SetActive(false);
-            this.transform.parent.FindChild("Pocket").FindChild("Pan_shortcut").gameObject.SetActive(false);
+            transform.parent.Find("Pocket_dashboard").gameObject.SetActive(false);
+            transform.parent.Find("Pan_shortcut").gameObject.SetActive(false);
         }
     }
 }

@@ -1,148 +1,129 @@
 ﻿using UnityEngine;
 using System.Collections;
-
-public class player_pocket : MonoBehaviour {
-    private bool isCover;
-    public Transform[] tItem_temp=new Transform[9];
-    public Transform Model;
-	void Start() {
-        isCover = false;
+using _spellLib;
+using GetSName;
+using UnityEngine.Networking;
+public class player_pocket : NetworkBehaviour
+{
+    bool IsShow;
+    public Bag mybag = new Bag(9);
+    void Start() {
+        mybag.SetOwner(this.gameObject);
+        IsShow = false;
 	}
     public  int Query(int id)
     {
-        for(int k = 0; k < 9; k++)
-        {
-            if (tItem_temp[k] != null)
-            {
-                if (tItem_temp[k].GetComponent<Self_class>().s_id == id)
-                {
-                    return tItem_temp[k].GetComponent<Self_class>().s_iCount;
-                }
-            }
-        }
-        return 0;
+        return mybag.GetCount(id);
     }
-    bool findadr(Transform Item_t)
+    public void Canvas_con()
     {
-        isCover = false;
-        for(int k = 0; k < tItem_temp.Length; k++)
-        {
-            if (tItem_temp[k] != null)
-            {
-                if (tItem_temp[k].GetComponent<Self_class>().s_id == Item_t.GetComponent<Self_class>().s_id)
-                {
-                    tItem_temp[k].GetComponent<Self_class>().s_iCount++;
-                    Destroy(Item_t.gameObject);
-                    isCover = true;
-                    return true;
-                }
-            }         
-        }
-        if (!isCover)
-        {
-            for (int k = 0; k < tItem_temp.Length; k++)
-            {
-                if (tItem_temp[k] == null)
-                { 
-                    tItem_temp[k] = Item_t;
-                    Item_t.name = "Item" + k;
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
-    }
-    void Canvas_con()
-    {
-        GameObject.Find("Player_CAnvas").transform.FindChild("B_poc").gameObject.GetComponent<Pocket>().Update_canvas_con(tItem_temp);
+        this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("Center").gameObject.GetComponent<Pocket>().Update_canvas_con();
     }
     public void Pick(Transform Item)
     {
-        Transform I_temp = (Transform)Instantiate(Model, this.transform.position, this.transform.rotation);
-        I_temp.parent = this.transform;
-        I_temp.GetComponent<Self_class>().s_class = Item.GetComponent<Self_class>().s_class;
-        I_temp.GetComponent<Self_class>().s_Icontent = Item.GetComponent<Self_class>().s_Icontent;
-        I_temp.GetComponent<Self_class>().s_iType = Item.GetComponent<Self_class>().s_iType;
-        I_temp.GetComponent<Self_class>().s_name = Item.GetComponent<Self_class>().s_name;
-        I_temp.GetComponent<Self_class>().s_id = Item.GetComponent<Self_class>().s_id;
-        I_temp.GetComponent<Self_class>().s_iCount = Item.GetComponent<Self_class>().s_iCount;
-        I_temp.GetComponent<Self_class>().isTwiceItem = Item.GetComponent<Self_class>().isTwiceItem;
-        try
+        if (!isLocalPlayer)
         {
-            this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis("获取物品：" + Item.GetComponent<Self_class>().s_name + Item.GetComponent<Self_class>().s_iCount + "个");
+            return;
         }
-        catch { }
-        Destroy(Item.gameObject);
-        if (!findadr(I_temp))
+        if (mybag.IsFull())
         {
-            try
-            {
-                this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis("背包已满！");
-            }
-            catch { }
+            GetComponent<UnitSyncCmd>().CmdSetPick(Item.gameObject);
+            if(!IsShow) MyCanvas.IssueDis("背包已满！");
+            IsShow = true;
         }
+        else
+        {
+            MyCanvas.IssueDis("得到：" + Item.GetComponent<Self_class>().s_name + " " + Item.GetComponent<Self_class>().s_iCount + "个");
+            mybag.Push(Item.gameObject);
+            GetComponent<UnitSyncCmd>().CmdDes(Item.gameObject);
+            Canvas_con();
+            IsShow = false;
+        }
+    }
+    public void dropall()
+    {
+        mybag.Clear();
         Canvas_con();
     }
-    public void drop(int Item_addr)
+    public void drop(int Item_sid)
     {
-        Destroy(tItem_temp[Item_addr].gameObject);
-        tItem_temp[Item_addr] = null;
+        mybag.Delete(Item_sid);
         Canvas_con();
     }
-    public void use(int Item_addr)
+    public void use(int Item_sid)
     {
-        int spell_id = this.transform.parent.FindChild("get_sName").GetComponent<get_sName>().Item_Spell(tItem_temp[Item_addr].GetComponent<Self_class>().s_id);
-        string note = "使用了"+tItem_temp[Item_addr].GetComponent<Self_class>().s_name;
-        this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis(note);
-        this.transform.parent.FindChild("Spell").GetComponent<Spell_cast>().casting(spell_id, this.transform);
-        if (tItem_temp[Item_addr].GetComponent<Self_class>().s_iType == "prop"|| tItem_temp[Item_addr].GetComponent<Self_class>().s_iType == "staticequi")
+        if (!mybag.Query(Item_sid))
         {
-            if (tItem_temp[Item_addr].GetComponent<Self_class>().isTwiceItem)
+            MyCanvas.IssueDis("该物品，已缺失");
+            return;
+        }
+        int spell_id = Item.SpellID(Item_sid);
+        string note = "使用了"+Item.Name(Item_sid);
+        MyCanvas.IssueDis(note);
+        SpellSystem.SpellCast(spell_id, this.gameObject);
+        if (Item.Type(Item_sid) == "prop"|| Item.Type(Item_sid) == "staticequi"|| Item.Type(Item_sid) == "Building") 
+        {
+            if (Item.IsCanTwiceSpell(Item_sid))
             {
-                if (tItem_temp[Item_addr].GetComponent<Self_class>().isCast)
-                {
-                    tItem_temp[Item_addr].GetComponent<Self_class>().s_iCount--;
-                }
-                else
-                {
-                    tItem_temp[Item_addr].GetComponent<Self_class>().isCast = true;
-                }
+                mybag.Cast(Item_sid);
+                Canvas_con();
             }
             else
             {
-                if (tItem_temp[Item_addr].GetComponent<Self_class>().s_iType == "staticequi")
+                if (Item.Type(Item_sid) == "staticequi")
                 {
-                    this.transform.parent.FindChild("Talent").GetComponent<TalentCenter>().EquiWork(tItem_temp[Item_addr].GetComponent<Self_class>().s_id, this.transform);
+                    Equi(Item_sid);
                 }
-                tItem_temp[Item_addr].GetComponent<Self_class>().s_iCount--;
-            }
-            if (tItem_temp[Item_addr].GetComponent<Self_class>().s_iCount == 0)
-            {
-                this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("Pocket").FindChild("Pocket_dashboard").GetComponent<Pocket_Dashboard>().dash_addr = Item_addr + 1;
-                this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("Pocket").FindChild("Pocket_dashboard").GetComponent<Pocket_Dashboard>().drop();
+                else if(Item.Type(Item_sid) == "Building")
+                {
+                    GameObject temp = mybag.GoEntity(Item_sid);
+                    Building(temp);
+                }
+                mybag.Sub(Item_sid);
+                Canvas_con();
             }
         }
     }
+    public void Building(GameObject build)
+    {
+        GameObject model = GameObject.Find("System").transform.FindChild("MyDb").GetComponent<MyDb>().BuildingPrefab;
+        GameObject buildpos = Instantiate(model, transform.position + transform.forward * 5 + transform.up * 2, Quaternion.identity, transform) as GameObject;
+        buildpos.name = "buildpos";
+        int buildId = this.transform.parent.FindChild("get_sName").GetComponent<get_sName>().BuildId(build.GetComponent<Self_class>().s_id);
+        buildpos.GetComponent<Building>().SetBuildId(buildId);
+    }
+    public void Equi(int Item_sid)
+    {
+        GameObject I_temp = mybag.GoEntity(Item_sid);
+        I_temp.transform.parent = this.transform.FindChild("Equi");
+        string epos = Item.EquiPos(Item_sid);
+        if (transform.FindChild("Equi").FindChild(epos) != null)
+        {
+            GameObject tempequi = transform.FindChild("Equi").FindChild(epos).gameObject;
+            GameObject.Find("Environment").transform.FindChild("Item_class").GetComponent<Item_create>().ItemAloneCreate(transform.position, tempequi.GetComponent<Self_class>().s_id);
+            UnEqui(tempequi);
+            MyCanvas.IssueDis("已装备" + Item.Name(Item_sid) + "之前装备已替下");
+            I_temp.name = epos;
+        }
+        else
+        {
+            I_temp.transform.parent = transform.FindChild("Equi");
+            I_temp.name = epos;
+            MyCanvas.IssueDis("已装备" + Item.Name(Item_sid));
+        }
+        SelfClass.AddAtribute(I_temp, this.gameObject);
+        if (epos == "Hand")
+        {
+            transform.GetComponent<player>().InsWeapon(Item.WeponModeIndex(Item_sid));
+        }
+    }
+    public void UnEqui(GameObject equi)
+    {
+        SelfClass.SubAtribute(equi, this.gameObject);
+        this.gameObject.GetComponent<UnitSyncCmd>().CmdDes(equi);
+    }
     public void consume(int Item_id,int c_count)
     {
-        for (int k = 0; k < 9; k++)
-        {
-            if (tItem_temp[k] != null)
-            {
-                if (tItem_temp[k].GetComponent<Self_class>().s_id == Item_id)
-                {
-                    if (tItem_temp[k].GetComponent<Self_class>().s_iCount - c_count > 0)
-                    {
-                        tItem_temp[k].GetComponent<Self_class>().s_iCount -= c_count;
-                        Canvas_con();
-                    }
-                    else
-                    {
-                        drop(k);
-                    }
-                }
-            }
-        }
+        mybag.Sub(Item_id, c_count);
     }
 }

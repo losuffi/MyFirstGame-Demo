@@ -20,12 +20,19 @@ public class s_empty : MonoBehaviour {
                     if (Physics.Linecast(Trig_point, Trig_point + this.transform.forward * 5, out hit))
                     {
                         isCover = false;
-                        foreach (Transform ta in Target)
+                        if (hit.collider.transform == transform || hit.collider.transform == transform.parent || hit.collider.GetComponent <Self_class>()==null|| !hit.collider.GetComponent<Self_class>().isLife||hit.collider.transform.tag!="Living")
                         {
-                            if (ta == hit.collider.transform || hit.collider.transform == this.transform)
+                            isCover = true;
+                        }
+                        else
+                        {
+                            foreach (Transform ta in Target)
                             {
-                                isCover = true;
-                                break;
+                                if (ta == hit.collider.transform)
+                                {
+                                    isCover = true;
+                                    break;
+                                }
                             }
                         }
                         if (!isCover)
@@ -39,10 +46,7 @@ public class s_empty : MonoBehaviour {
             }
             for (int n = 0; n < m; n++)
             {
-                if (Target[n].GetComponent<Self_class>().s_class == "Hero" && Target[n].GetComponent<Self_class>().isLife == true)
-                {
-                    Target[n].GetComponent<Self_class>().injured(8 / 5,this.transform.parent);
-                }
+                Target[n].GetComponent<Self_class>().injured(8 / 5, this.transform.parent);
             }
         }
 	}

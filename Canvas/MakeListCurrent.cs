@@ -11,6 +11,7 @@ public class MakeListCurrent : MonoBehaviour,IPointerClickHandler {
     {
         if (type == 1)
         {
+            transform.parent.GetComponent<MakeList>().disp();
             cplayer.GetComponent<PlayerMake>().Work(Item_id, compose, Item_count);
         }
         else

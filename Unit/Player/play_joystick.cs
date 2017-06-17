@@ -1,53 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using _spellLib;
 public class play_joystick : MonoBehaviour {
-    private Hashtable Hash_dash = new Hashtable();
-    public void work(string result)
+    void OnGUI()
     {
-        if (Hash_dash.Contains(result))
+        if (Input.anyKey)
         {
-            if ((int)Hash_dash[result] < 50000)
+            Event e = Event.current;
+            if (e.isKey)
             {
-                this.transform.GetComponent<player_pocket>().use((int)Hash_dash[result]);
-            }
-            else if((int)Hash_dash[result] > 50000)
-            {
-                this.transform.GetComponent<PlayerTalent>().TalentCast((int)Hash_dash[result]);
+                Pan_shortcut._sc.KeyTrig(e.keyCode, this.gameObject);
             }
         }
-        else
-        {
-            this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis("该快捷键无绑定");
-        }
-    }
-    public void set(string res,int Item_addr)
-    {
-        if(Hash_dash.Contains(res)){
-            Hash_dash[res] = Item_addr;
-        }
-        else
-        {
-            Hash_dash.Add(res, (object)Item_addr);
-        }
-    }
-    public bool query(string res)
-    {
-        return Hash_dash.Contains(res);
-    }
-    public string query_i(int Addr)
-    {
-        foreach(DictionaryEntry de in Hash_dash)
-        {
-            if ((int)de.Value == Addr)
-            {
-                return (string)de.Key;
-            }
-        }
-        return "Empty";
-    }
-    public void remove(string res)
-    {
-        Hash_dash.Remove(res);
     }
 }

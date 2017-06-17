@@ -11,9 +11,14 @@ public class ScrooList : MonoBehaviour,IPointerDownHandler, IPointerUpHandler
         if (this.transform.name == "Scroll_List")
         {
             poszero = this.transform.FindChild("MakeList").position;
-        }else
+        }
+        else if (this.transform.name == "Scroll_AllList")
         {
             poszero = this.transform.FindChild("MakeAllList").position;
+        }
+        else if(this.transform.name == "Scroll_AllList")
+        {
+            poszero = this.transform.FindChild("MakeListTable").position;
         }
     }
     public void OnPointerDown(PointerEventData eventdata)
@@ -23,7 +28,12 @@ public class ScrooList : MonoBehaviour,IPointerDownHandler, IPointerUpHandler
             ablecount = this.transform.FindChild("MakeList").GetComponent<MakeList>().AbleCount;
             pos = this.transform.FindChild("MakeList").position;
         }
-        else
+        else if (this.transform.name == "Scroll_AllList")
+        {
+            ablecount = this.transform.FindChild("MakeAllList").GetComponent<MakeList>().AbleCount;
+            pos = this.transform.FindChild("MakeAllList").position;
+        }
+        else if(this.transform.name == "Scroll_ListTable")
         {
             ablecount = this.transform.FindChild("MakeAllList").GetComponent<MakeList>().AbleCount;
             pos = this.transform.FindChild("MakeAllList").position;
@@ -38,11 +48,18 @@ public class ScrooList : MonoBehaviour,IPointerDownHandler, IPointerUpHandler
                 this.transform.FindChild("MakeList").position = pos;
             }
         }
-        else
+        else if (this.transform.name == "Scroll_AllList")
         {
             if (this.transform.FindChild("MakeAllList").position.y - poszero.y > ablecount * 130 || this.transform.FindChild("MakeAllList").position.y - poszero.y < -4 * 130)
             {
                 this.transform.FindChild("MakeAllList").position = pos;
+            }
+        }
+        else if (this.transform.name == "Scroll_ListTable")
+        {
+            if (this.transform.FindChild("MakeListTable").position.y - poszero.y > ablecount * 130 || this.transform.FindChild("MakeListTable").position.y - poszero.y < -4 * 130)
+            {
+                this.transform.FindChild("MakeListTable").position = pos;
             }
         }
     }

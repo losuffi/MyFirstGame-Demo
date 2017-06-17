@@ -5,7 +5,8 @@ public class PlayerMake : MonoBehaviour {
 
     public void Work(int Itemid,string compose,int Item_count=1)
     {
-        string[] val_arr = (string[])compose.Split('$').Clone();
+
+        string[] val_arr = (string[])compose.Split('^')[1].Split('$').Clone();
         for (int k = 1; k < val_arr.Length; k++)
         {
             int id = int.Parse(val_arr[k].Split('%')[0]);

@@ -1,106 +1,119 @@
 ﻿using UnityEngine;
 using System.Collections;
-public class Self_class : MonoBehaviour {
+using UnityEngine.UI;
+using UnityEngine.Networking;
+public class Self_class : NetworkBehaviour {
+    //-----------------------------公共成員
     public string s_class;
+    [SyncVar]public int s_id;
+    public string s_name;
+    public string s_Icontent;
+    [SyncVar]public float p_life;
+    [SyncVar]public float s_life;
+    public bool isLife;
+    //------------------------------!
+
+    //-----------------------------委托回调
+    public delegate void IsAttacked(GameObject Murderr);
+    public event IsAttacked Attacked;
+    public delegate void IsDead();
+    public event IsDead EvisDead;
+    //------------------------------!
+    //-----------------------------Hero類成員 Equi类属性
     public string s_Controler;
     public float s_Scout=0;
     public int TalentFreePoint;
-    public int s_id;
-    public float s_life;
     public float s_speed;
-    public string s_name;
-    public string s_Icontent;
     public float s_AttackValue;
     public float s_Defence;
-    private float p_life;
     private float p_Hunger;
     public float s_HungerSpeed;
     public float s_Hunger;
-    public bool isLife;
-    public string s_iType;
-    public int s_iCount=1;
-    public Canvas s_Canvas;
-    public float s_speedInit;
+    public Transform s_Canvas;
     public float s_GatherValue;
+    //-------------------------------!
+
+    //-------------------------------Item類
+    public string s_iType;
+    [SyncVar]public int s_iCount=1;
+    [SyncVar]public bool isPick = true;
+    public float s_speedInit;
     private float TimeH;
     public bool isTwiceItem;
     public bool isCast = false;
     public bool isCasting = false;
+    //----------------------------------!
+    //------------------------------建筑类
+    [SyncVar] public GameObject Owner;
+    //---------------------------------!
+    private bool isDead = false;
+
+
+    //------------------------------------函數
     public void injured(float damage,Transform Murderer)
     {
         if (isLife) 
         {
+            if (isServer)
+            {
+                GameObject.Find("Hero").transform.FindChild("Player").GetComponent<UnitSyncCmd>().RpcInjuredDis(Murderer.gameObject, this.gameObject);
+            }
+            if (Murderer.GetComponent<Self_class>().s_Canvas != null)
+            {
+                Murderer.GetComponent<Self_class>().s_Canvas.transform.FindChild("RLife").gameObject.SetActive(true);
+                Murderer.GetComponent<Self_class>().s_Canvas.transform.FindChild("RLife").GetComponent<Rlife>().setTarget(this.gameObject);
+            }
             damage = Mathf.Pow(1.008f, -s_Defence) * damage;
             if (s_class == "Hero" || s_class == "Monster")
             {
-                if (p_life - damage > 0)
+                GameObject locplayer = GameObject.Find("Hero").transform.FindChild("Player").gameObject;
+                if (p_life - damage <= 0)
                 {
-                    p_life -= damage;
+                    locplayer.GetComponent<UnitSyncCmd>().CmdLifeZero(this.gameObject);
                 }
                 else
                 {
-                    p_life = 0;
-                    if (Murderer.GetComponent<Self_class>().s_class == "Hero" && Murderer.GetComponent<Self_class>().s_Controler != s_Controler) 
-                    {
-                        Murderer.GetComponent<Self_class>().s_Scout += s_Scout;
-                        try
-                        {
-                            Murderer.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis("你擊殺了" + s_name + ",獲取分數：" + s_Scout);
-                        }
-                        catch { }
-                    }
-                    Dead();
+                    locplayer.GetComponent<UnitSyncCmd>().CmdChangeLife(-damage, this.gameObject);
                 }
-                if (this.transform.GetComponent<Monster>() != null)
-                {
-                    this.transform.GetComponent<Monster>().isAttacked(Murderer);
-                }
-                try
-                {
-                    Murderer.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis(s_name + "被伤害，伤害量为：" + (int)damage + ",当前生命值为：" + p_life);
-                }
-                catch { }
-
-                try
-                {
-                    this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis(s_name + "被伤害，伤害量为：" + (int)damage + ",当前生命值为：" + p_life);
-                }
-                catch { }
+                if (Attacked != null)
+                    Attacked(Murderer.gameObject);
             }
         }
     }
-    public void Gather(float value,Transform GatherMan)
+    public void CmdGather(float value,Transform GatherMan)
     {
+        if (GatherMan.GetComponent<Self_class>().s_Canvas != null)
+        {
+            GatherMan.GetComponent<Self_class>().s_Canvas.transform.FindChild("RLife").gameObject.SetActive(true);
+            GatherMan.GetComponent<Self_class>().s_Canvas.transform.FindChild("RLife").GetComponent<Rlife>().setTarget(this.gameObject);
+        }
+        if (!isLife) return;
         if (s_class == "Tree")
         {
+            GameObject locplayer = GameObject.Find("Hero").transform.FindChild("Player").gameObject;
             if (p_life - value > 0)
             {
-                p_life -= value;
+                locplayer.GetComponent<UnitSyncCmd>().CmdChangeLife(-value, this.gameObject);
             }
             else
             {
-                p_life = 0;
+                locplayer.GetComponent<UnitSyncCmd>().CmdLifeZero(this.gameObject);
                 isLife = false;
-                Dead();
             }
-            try
-            {
-                GatherMan.GetComponent<Self_class>().s_Canvas.transform.FindChild("IssueBoard").GetComponent<IssueBoard>().dis(s_name + "正在被采集，采集程度：" + value);
-            }
-            catch { }
         }
     }
     public void Heal(float heal_v)
     {
+        GameObject locplayer = GameObject.Find("Hero").transform.FindChild("Player").gameObject;
         if (isLife)
         {
             if (p_life+heal_v>s_life)
             {
-                p_life = s_life;
+                locplayer.GetComponent<UnitSyncCmd>().CmdLifeInit(this.gameObject);
             }
             else
             {
-                p_life += heal_v;
+                locplayer.GetComponent<UnitSyncCmd>().CmdChangeLife(heal_v, this.gameObject);
             }
         }
         try
@@ -117,19 +130,23 @@ public class Self_class : MonoBehaviour {
     {
         return p_Hunger;
     }
-    public void Dead()
+    public void CmdDead()
     {
         isLife = false;
+        if (EvisDead != null)
+            EvisDead();
         if (s_class == "Tree")
         {
-            this.transform.GetComponent<EnvItemBe>().BeItem();
-            Destroy(this.transform.parent.gameObject);
+            EnvironmentCreate._ins.EnvBeGather(gameObject);
+            GameObject.Find("Hero").transform.FindChild("Player").GetComponent<UnitSyncCmd>().CmdDes(this.gameObject);
         }
         else if (s_class == "Monster")
         {
-            this.transform.GetComponent<MonEnvBe>().BeItem();
-            Destroy(this.transform.FindChild("AI").gameObject);
-            this.transform.GetComponent<Animator>().SetBool("isLife", false);
+            if (isServer)
+            {
+                transform.GetComponent<MonEnvBe>().BeItem();
+                this.transform.GetComponent<Animator>().SetBool("isLife", false);
+            }
         }
         else if(s_class=="Hero"&& s_Controler == "AI")
         {
@@ -138,6 +155,7 @@ public class Self_class : MonoBehaviour {
         }
         else if(s_class == "Hero" && s_Controler == "User")
         {
+            transform.GetComponent<player>().Dead();
             s_Canvas.transform.FindChild("Gameover").gameObject.SetActive(true);
             s_Canvas.transform.FindChild("Gameover").GetComponent<GameOver>().GetScout();
         }
@@ -167,12 +185,16 @@ public class Self_class : MonoBehaviour {
         TalentFreePoint = 1;
         s_Defence = 0;
         initPos = this.transform.position;
-        TimeFly = Time.time;
     }
-    private float TimeFly;
     private Vector3 initPos;
-    void Update()
+    void FixedUpdate()
     {
+        isLife = (p_life > 0 ? true : false);
+        if (!isDead && !isLife)
+        {
+            CmdDead();
+            isDead = true;
+        }
         if (Time.time - TimeH > 30)
         {
             TimeH = Time.time;
@@ -185,17 +207,14 @@ public class Self_class : MonoBehaviour {
     }
     void Clif()
     {
-        if (this.transform.GetComponent<CharacterController>().isGrounded)
-        {
-            TimeFly = Time.time;
-        }
-        else
-        {
-            if (Time.time - TimeFly > 3f)
+       if (!this.transform.GetComponent<CharacterController>().isGrounded)
+          {
+            if (transform.position.y < -100)
             {
                 if (s_class == "Hero" && s_Controler == "User")
                 {
-                    Dead();
+                    Debug.Log(this.transform.position);
+                    CmdDead();
                     this.transform.position = initPos;
                 }
                 else
@@ -203,6 +222,11 @@ public class Self_class : MonoBehaviour {
                     Destroy(this.gameObject);
                 }
             }
-        }
+          }
     }
+    public void BindCanvas(Transform pUI)
+    {
+        s_Canvas = pUI;
+    }
+    //-----------------------------------hook
 }

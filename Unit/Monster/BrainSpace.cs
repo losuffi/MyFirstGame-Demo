@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-
 public class BrainSpace : MonoBehaviour {
     //****************************************************公共类
     public Transform[] Acts;

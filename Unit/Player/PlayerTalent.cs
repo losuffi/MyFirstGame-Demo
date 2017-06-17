@@ -4,12 +4,10 @@ using System.Collections;
 public class PlayerTalent : MonoBehaviour {
     public Hashtable TalentHash=new Hashtable();
     private int Addr;
-    private Transform Board;
     public Transform TalentModel;
     void Awake()
     {
         Addr = 0;
-        Board = this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("Pocket").FindChild("TalentBoard");
     }
     public void GetTalentStudy()
     {
@@ -34,7 +32,7 @@ public class PlayerTalent : MonoBehaviour {
     }
     private void ConBoard()
     {
-        Board.GetComponent<TalentBoard>().WorkBoard();
+        this.transform.GetComponent<Self_class>().s_Canvas.transform.FindChild("Pocket").FindChild("TalentBoard").GetComponent<TalentBoard>().WorkBoard();
     }
     public void TalentCast(int Tid)
     {

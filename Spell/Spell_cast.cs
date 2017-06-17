@@ -44,13 +44,16 @@ public class Spell_cast : MonoBehaviour{
                     case 301:
                         CastSpell.GetComponent<MeatSmall>().Work(Trig_Unit,15);
                         break;
+                    case 302:
+                        CastSpell.GetComponent<AddFuel>().Work(Trig_Unit);
+                        break;
                     default:
                         break;
                 }
             }
             else
             {
-                if (Trig_Unit.name == "player")
+                if (Trig_Unit.GetComponent<Self_class>().s_Controler == "User")
                 {
                     StartCoroutine(BufferTime(Trig_Unit, spell_id));
                     string notice = CastSpell.GetComponent<Spell_bass>().spell_name + " 的冷却时间未恢复";

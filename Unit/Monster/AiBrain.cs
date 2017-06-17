@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-
 public class AiBrain : BrainSpace
 {
     public Transform AI;
@@ -355,7 +354,7 @@ public class AiBrain : BrainSpace
                 ActWork(5);
             }
         }
-        else if (IsCanDamageBySpell(101))
+        else if (IsCanDamageBySpell(101)&& Acts[4].GetComponent<ACT>().Status == "isDone")
         {
             if (!PatrolTarget.GetComponent<Self_class>().isLife)
             {
@@ -410,11 +409,11 @@ public class AiBrain : BrainSpace
         float Distance;
         if (sid == 101)
         {
-            Distance = 2;
+            Distance = 1.8f;
         }
         else if(sid>101&&sid<=105)
         {
-            Distance = 200;
+            Distance = 40;
         }
         else
         {
@@ -481,6 +480,11 @@ public class AiBrain : BrainSpace
                 ActWork(1);
             }
             else
+
+
+
+
+
             {
                 ActWork(3);
             }
@@ -527,11 +531,33 @@ public class AiBrain : BrainSpace
 
 
 
-        //             ↓  激励---轮询
+    //             ↓  激励---轮询
+    private bool isWork = false;
+    private bool isHost = false;
     void Update()
     {
-        MissionCenter();
-        ActCenter();
+        if (!isWork)
+        {
+            Iswork();
+        }
+        else
+        {
+            if (isHost)
+            {
+                MissionCenter();
+                ActCenter();
+            }
+        }
     }
-
+    void Iswork()
+    {
+        if (GameObject.Find("Hero").transform.FindChild("Player") != null)
+        {
+            isWork = true;
+            if (GameObject.Find("Hero").transform.FindChild("Player").GetComponent<player>().isServer)
+            {
+                isHost = true;
+            }
+        }
+    }
 }

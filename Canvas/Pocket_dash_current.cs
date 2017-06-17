@@ -8,7 +8,6 @@ public class Pocket_dash_current : MonoBehaviour,IPointerClickHandler
     {
         if (keyname == "drop")
         {
-            this.transform.parent.parent.FindChild("MakerSpace").gameObject.SetActive(true);
             this.transform.parent.GetComponent<Pocket_Dashboard>().drop();
         }
         else if (keyname == "close")

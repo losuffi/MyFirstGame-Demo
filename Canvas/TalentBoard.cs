@@ -4,22 +4,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public class TalentBoard : MonoBehaviour{
     public Transform cplayer;
-    private bool isBoardUpdate,isABoardUpdate;
+    public bool isABoardUpdate = true;
+    public bool isBoardUpdate = false;
     private Transform SpriteImage;
     private Transform Board,ABoard;
     public Transform TalentMode_List;
     public Transform GetsName;
-    void Awake()
+    public void Init()
     {
         Board = this.transform.FindChild("List");
         ABoard = this.transform.FindChild("List_1");
         SpriteImage = this.transform.FindChild("TalentSprite");
-    }
-    void Start()
-    {
-        GetsName = cplayer.parent.FindChild("get_sName");
-        isBoardUpdate = false;
-        isABoardUpdate = true;
     }
     public void WorkBoard()
     {

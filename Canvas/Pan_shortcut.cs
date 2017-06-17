@@ -2,43 +2,55 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using _spellLib;
 public class Pan_shortcut : MonoBehaviour,IPointerClickHandler
 {
-    public Transform cplayer;
-    public bool isSet;
-    void Start()
+    private bool IsOpen;
+    private KeyCode currentkey;
+    public  static ShortCuts _sc;
+    public int Id;
+    public void Clean()
     {
-    }
-    public void OnPointerClick(PointerEventData eventdata)
-    {
-        string thisName = this.transform.name.Substring(2);
-        int TalentId = this.transform.parent.GetComponent<Panshort>().Talent_id;
-        if (TalentId == 0)
+        currentkey = _sc.GetKey(Id);
+        if (currentkey != KeyCode.Joystick1Button19)
         {
-            int ItemAddr = this.transform.parent.GetComponent<Panshort>().Item_addr;
-            isSet = cplayer.GetComponent<play_joystick>().query(thisName);
-            cplayer.GetComponent<play_joystick>().set(thisName, ItemAddr - 1);
-            string sign = "P_" + thisName + "_s";
-            string content = "物品栏" + ItemAddr + cplayer.GetComponent<player_pocket>().tItem_temp[ItemAddr - 1].GetComponent<Self_class>().s_name;
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().isSet = true;
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().change();
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().content = content;
+            this.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 1);
+            this.transform.Find("Text").GetComponent<Text>().text = currentkey.ToString();
         }
         else
         {
-            isSet = cplayer.GetComponent<play_joystick>().query(thisName);
-            cplayer.GetComponent<play_joystick>().set(thisName, TalentId);
-            string sign = "P_" + thisName + "_s";
-            string content = cplayer.parent.FindChild("get_sName").GetComponent<get_sName>().Talent_name(TalentId);
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().isSet = true;
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().change();
-            this.transform.parent.FindChild(sign).GetComponent<Pan_short_signal>().content = content;
+            this.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 1);
+            this.transform.Find("Text").GetComponent<Text>().text = " ";
         }
-        StartCoroutine(DelayClose());
     }
-    IEnumerator DelayClose()
+    void Start()
     {
-        yield return new WaitForSeconds(0.4f);
-        this.transform.parent.gameObject.SetActive(false);
+        _sc = new ShortCuts();
+    }
+    void OnGUI()
+    { 
+        if (IsOpen)
+        {
+            this.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 0);
+            if (Input.anyKeyDown)
+            {
+                Event fee = Event.current;
+                if (fee.isKey)
+                {
+                    currentkey = fee.keyCode;
+                    if (currentkey.ToString() != "None")
+                    {
+                        this.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 1);
+                        this.transform.Find("Text").GetComponent<Text>().text = currentkey.ToString();
+                        _sc.AddShort(currentkey, Id);
+                        IsOpen = false;
+                    }
+                }
+            }
+        }
+    }
+    public void OnPointerClick(PointerEventData eventdata)
+    {
+        IsOpen = IsOpen ? false : true;
     }
 }

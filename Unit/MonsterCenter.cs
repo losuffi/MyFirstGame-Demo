@@ -5,7 +5,7 @@ public class MonsterCenter : MonoBehaviour {
     public int maxCountSq;
     public int CountSq = 0;
     public Transform SqMode;
-    void Start()
+    public void CreateMon()
     {
         CreateSq();
     }

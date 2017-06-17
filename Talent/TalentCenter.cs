@@ -12,6 +12,27 @@ public class TalentCenter : MonoBehaviour {
         {
             AddForce(Trig_Unit, 10);
         }
+        else if (Iid == 20018)
+        {
+            AddForce(Trig_Unit, 5);
+            AddGather(Trig_Unit, 5);
+        }
+    }
+    public void UnEquiWork(int Iid, Transform Trig_Unit)
+    {
+        if (Iid == 20016)
+        {
+            AddDefense(Trig_Unit, -20);
+        }
+        else if (Iid == 20017)
+        {
+            AddForce(Trig_Unit, -10);
+        }
+        else if (Iid == 20018)
+        {
+            AddForce(Trig_Unit, -5);
+            AddGather(Trig_Unit, -5);
+        }
     }
     public void Work(int tid,Transform Trig_Unit)
     {
@@ -40,5 +61,9 @@ public class TalentCenter : MonoBehaviour {
     private void AddDefense(Transform Trig_Unit, float defensevalue)
     {
         Trig_Unit.GetComponent<Self_class>().s_Defence += defensevalue;
+    }
+    private void AddGather(Transform Trig_Unit, float gathervalue)
+    {
+        Trig_Unit.GetComponent<Self_class>().s_GatherValue += gathervalue;
     }
 }

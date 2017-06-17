@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-
-public class Monster : MonoBehaviour
+using UnityEngine.Networking;
+public class Monster : NetworkBehaviour
 {
     public Transform Mo;
     public float HoriSpeed;
@@ -34,18 +34,21 @@ public class Monster : MonoBehaviour
     }
     void Update()
     {
-        if (!Mo.GetComponent<CharacterController>().isGrounded)
+        if (isServer)
         {
-            VertSpeed -= 98 * Time.deltaTime;
-            Mo.GetComponent<CharacterController>().Move(Mo.up * VertSpeed * Time.deltaTime);
-        }
-        else
-        {
-            VertSpeed = 0;
-            if (this.transform.FindChild("ejector"))
+            if (!Mo.GetComponent<CharacterController>().isGrounded)
             {
-                GameObject.Destroy(this.transform.FindChild("ejector").gameObject);
-                this.transform.GetComponent<Self_class>().s_speed = this.transform.GetComponent<Self_class>().s_speedInit;
+                VertSpeed -= 90 * Time.deltaTime;
+                Mo.GetComponent<CharacterController>().Move(Mo.up * VertSpeed * Time.deltaTime);
+            }
+            else
+            {
+                VertSpeed = 0;
+                if (this.transform.FindChild("ejector"))
+                {
+                    GameObject.Destroy(this.transform.FindChild("ejector").gameObject);
+                    this.transform.GetComponent<Self_class>().s_speed = this.transform.GetComponent<Self_class>().s_speedInit;
+                }
             }
         }
     }
@@ -74,7 +77,7 @@ public class Monster : MonoBehaviour
     {
        Mo.GetComponent<Animator>().SetBool("isAttack", false);
        isAttackDone = (status >= 1 ? true : false);
-
+       Mo.GetComponent<Animator>().SetBool("isSpell_1", false);
     }
     public void Spell(int sid)
     {

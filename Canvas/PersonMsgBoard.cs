@@ -9,6 +9,7 @@ public class PersonMsgBoard : MonoBehaviour {
     private Transform Tname, Tdefense, Tattack, Tscout, Tslife, Thunger, Thungerspeed, Tgather, Tfreetalent, Tspeed;
     void Awake()
     {
+        cplayer = this.transform.parent.GetComponent<Canvas_Init>().cplayer;
         Tname = this.transform.FindChild("Tname");
         Tdefense = this.transform.FindChild("Tdefense");
         Tattack = this.transform.FindChild("Tattack");
@@ -47,10 +48,9 @@ public class PersonMsgBoard : MonoBehaviour {
         gather = sc.s_GatherValue;
         freetalent = sc.TalentFreePoint;
         sname = sc.s_name;
-        Transform TimeTram = GameObject.Find("System").transform;
-        int Days = TimeTram.GetComponent<TimeTram>().DayCount;
-        int Hour = TimeTram.GetComponent<TimeTram>().NowTime[0];
-        int Minu = TimeTram.GetComponent<TimeTram>().NowTime[1];
-        scout+=0.1f * (Days * 24 * 60 + Hour * 60 + Minu - 32f);
+        Transform TimeTram = GameObject.Find("System").transform.FindChild("TIme");
+        int _time = TimeTram.GetComponent<TimeTram>().Time;
+        int _day = TimeTram.GetComponent<TimeTram>().Day;
+        scout += 0.1f * (_day * 14400 + _time - 32f);
     }
 }

@@ -15,6 +15,7 @@ public class Menu : MonoBehaviour {
     private AsyncOperation Asy;
     void Awake()
     {
+        Screen.fullScreen = true;
         Author = this.transform.FindChild("Author");
         Loading = this.transform.FindChild("Loading");
         mMenu = this.transform.FindChild("Menu");
