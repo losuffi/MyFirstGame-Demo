@@ -62,3 +62,5 @@
 	思路二、
 
 	缩减游戏周期： 需要简化 建筑种类，增强物品的制作。
+	
+	<a href="https://pan.baidu.com/s/1skRDmIL"> Demo 下载</a>
